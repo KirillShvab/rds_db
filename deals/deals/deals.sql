@@ -1,4 +1,12 @@
--- space and newbi
+
+/*
+Сделки риэлторов за актуальный отчетный месяц
+
+Описание:
+    Запрос возвращает все сделки риэлторов за текущий отчетный месяц.
+    Если текущая дата находится с 1 по 3 число месяца, отчетный период считается предыдущим месяцем.
+*/
+
 WITH dates_cte AS (
     SELECT
         CASE
@@ -26,9 +34,8 @@ deals AS (
       AND d.msd_rieltor_result = 'Риэлтор'
       AND LOWER(d.employee_group_0) = 'нет'
       AND e.employee_status_priority = TRUE
-      AND LOWER(d.deal_type_sell_buyer) IN ('покупка', 'продажа') -- TODO нужны ли нам и другие сделки для newbi?
+      AND LOWER(d.deal_type_sell_buyer) IN ('покупка', 'продажа') 
       AND e.employee_type = 'Специалист отдела продаж'
-      -- депатаменты для newbi и space
       AND e.department_name IN (
             'Департамент межрегиональных сделок', 
             'Департамент новостроек',
