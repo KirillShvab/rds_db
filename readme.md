@@ -1,6 +1,7 @@
 
 ##  general transition dictonary
 
+### deals
 
 | Source Column         | Target Column              |
 |-----------------------|----------------------------|
@@ -17,3 +18,16 @@
 | type_ticket           | mortage_ticket_type        |
 | type_platezh          | revenue_type               |
 | deal_or_service       | revenue_type               |
+
+### deposits
+
+| Source Column    | Target Column               |
+|-----------------|-----------------------------|
+| date_deposit     | date_DEPOSIT               |
+| work_status      | employee_work_status       |
+| status_deposit   | deposit_status             |
+| user_status      | employee_status            |
+| uchit            | employee_work_type         |
+| group_o          | employee_group_0           |
+| status_priority  | employee_status_priority   |
+| department       | department_name            |
