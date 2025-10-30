@@ -1,6 +1,3 @@
-/*
-Определение количества активных риэлторов за актуальный отчётный месяц.
-*/
 WITH dates_cte AS (
     SELECT
         CASE
@@ -9,11 +6,14 @@ WITH dates_cte AS (
             ELSE DATE_TRUNC('month', CURRENT_DATE)::timestamp
         END AS actual_date
 ),
-deposits AS
+/*rieltors формирует список активных риэлторов на текущий отчетный месяц*/
+rieltors AS
 (
     SELECT 
         dt.actual_date as date_slice,
         e.city_name,
+        e.hsd_name,
+        e.msd_name,
         e.employee_name as rieltor_name,
         e.employee_id as rieltor_id,
         e.date_employment
@@ -36,5 +36,6 @@ deposits AS
                                 'Отдел новостроек',
                                 'Отдел продаж')
 )
-select count(*)
-from deposits
+select *
+from rieltors
+LIMIT 10;
