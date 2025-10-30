@@ -1,4 +1,8 @@
--- interregional deals
+/*
+ Запрос формирует выборку межрегиональных сделок за актуальный месяц 
+(или за предыдущий, если сегодня 1–3 число месяца), 
+с последующим подсчётом количества таких сделок.
+*/
 WITH dates_cte AS (
     SELECT
         CASE
@@ -29,8 +33,8 @@ interregional_deals AS (
     AND e.employee_status_priority = True
     AND
     (
-        (   -- newbi
-            d.deal_status = 'Закрыта (успех)'
+        (   d.kosmos = 0
+            AND d.deal_status = 'Закрыта (успех)'
             AND d.city_name IS NOT NULL
             AND d.deal_sub_type NOT IN ('Общий')
             AND e.department_name IN (  'Департамент межрегиональных сделок',
@@ -55,9 +59,8 @@ interregional_deals AS (
                 'Комиссия (услуга)')
         )
         OR
-        (   -- space
-            -- для всех городов, даже NULL
-            d.deal_status = 'Закрыта'
+        (   d.kosmos = 1
+            AND d.deal_status = 'Закрыта'
             AND e.department_name IN (  'Департамент коммерческой недвижимости', 
                                         'Департамент межрегиональных сделок', 
                                         'Департамент новостроек', 
