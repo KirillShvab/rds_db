@@ -12,11 +12,11 @@ WITH dates_cte AS (
 /*
  rieltors формирует список активных риэлторов на текущий отчетный месяц с метриками опыта.
     - Добавляются метрики опыта:
-        * experience_metric — общий показатель опыта из таблицы сотрудников.
-        * old_experience_metric — вычисленный опыт в месяцах на дату среза, с бонусом +1, если день трудоустройства ≤ 10.
+        * experience_ten_days — общий показатель опыта из таблицы сотрудников.
+        * old_experience_ten_days — вычисленный опыт в месяцах на дату среза, с бонусом +1, если день трудоустройства ≤ 10.
  * */
-rieltors AS (
-    SELECT 
+filtred_rieltors AS (
+ SELECT 
         dt.actual_date AS date_slice,
         e.city_name,
         e.hsd_name,
@@ -24,11 +24,11 @@ rieltors AS (
         e.employee_name AS rieltor_name,
         e.employee_id AS rieltor_id,
         e.date_employment,
-        e.experience_month AS experience_metric,
+        e.experience_month AS experience_ten_days,
         ((EXTRACT(YEAR FROM dt.actual_date) - EXTRACT(YEAR FROM e.date_employment)) * 12
               + (EXTRACT(MONTH FROM dt.actual_date) - EXTRACT(MONTH FROM e.date_employment))
               + CASE WHEN EXTRACT(DAY FROM e.date_employment) <= 10 THEN 1 ELSE 0 END
-            )::int AS old_experience_month
+            )::int AS old_experience_ten_days        
     FROM hr_new.employees AS e
     JOIN dates_cte AS dt ON TRUE
     WHERE
@@ -49,6 +49,29 @@ rieltors AS (
             'Отдел новостроек',
             'Отдел продаж'
         )
+),
+rieltors AS (
+	SELECT  
+        e.date_slice,
+        e.city_name,
+        e.hsd_name,
+        e.msd_name,
+        e.rieltor_name,
+        e.rieltor_id,
+        e.date_employment,
+        e.experience_ten_days,
+		e.old_experience_ten_days,
+		CASE
+            WHEN e.experience_ten_days BETWEEN 0 AND 3 THEN 'experience_0_3'
+            WHEN e.experience_ten_days BETWEEN 4 AND 6 THEN 'experience_3_6'
+            WHEN e.experience_ten_days >= 7 THEN 'experience_6_plus'
+        END AS experience,
+        CASE
+            WHEN e.old_experience_ten_days BETWEEN 0 AND 3 THEN 'experience_0_3'
+            WHEN e.old_experience_ten_days BETWEEN 4 AND 6 THEN 'experience_3_6'
+            WHEN e.old_experience_ten_days >= 7 THEN 'experience_6_plus'
+        END AS old_experience
+	FROM filtred_rieltors AS e
 ),
 /*
     Формирует сделки риэлторов по дате среза с булевыми флагами по типу объекта 
@@ -192,16 +215,18 @@ SELECT
     r.hsd_name,
     r.msd_name,
     r.rieltor_name,
-    r.experience_metric,
-    r.old_experience_metric,
-    d.garage AS garage,                          		-- гараж  
-    d.country_house AS country_house,            		-- загородная недвижимость  
-    d.secondary_apartment AS secondary_apartment,       -- квартира + вторичная
-    d.commercial AS commercial,                  		-- коммерческая недвижимость  
-    d.new_building AS new_building              		-- новостройка  
+    r.experience_ten_days,
+    r.old_experience_ten_days,
+    r.experience,
+    r.old_experience,
+    d.garage,                          	-- гараж  
+    d.country_house,            		-- загородная недвижимость  
+    d.secondary_apartment,       		-- квартира + вторичная
+    d.commercial,                  		-- коммерческая недвижимость  
+    d.new_building              		-- новостройка  
 FROM general_deals AS d
 JOIN rieltors AS r
     ON r.rieltor_id = d.rieltor_id
 WHERE 
- d.garage OR d.country_house OR d.secondary_apartment OR d.commercial OR d.new_building
-LIMIT 100;
+ (d.garage OR d.country_house OR d.secondary_apartment OR d.commercial OR d.new_building)
+LIMIT 1000;
