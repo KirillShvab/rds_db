@@ -168,25 +168,23 @@ general_deals as (
     from interregional_deals AS di
 )
 SELECT
-	d.deal_date,
-    d.city_name,
+	d.city_name,
     r.hsd_name,
     r.msd_name,
     r.rieltor_name,
-    r.rieltor_id,
-    r.date_employment,
-    r.experience_ten_days,
-    r.old_experience_ten_days,
-    r.experience,
-    r.old_experience,
-    d.country_house,            		-- загородная недвижимость  
-    d.secondary_apartment,       		-- квартира + вторичная
-    d.commercial,                  		-- коммерческая недвижимость  
-    d.new_building,						-- новостройка  
-    d.other_income,
-    d.scripts_indicator
+    SUM(r.experience_ten_days) AS experience_ten_days,
+    SUM(r.old_experience_ten_days) AS old_experience_ten_days,
+    COUNT(r.experience) AS experience,
+    COUNT(r.old_experience) AS old_experience,
+    COUNT(CASE WHEN r.experience = 'experience_0_3' THEN 1 ELSE NULL END) AS experience_0_3,
+    COUNT(CASE WHEN r.experience = 'experience_3_6' THEN 1 ELSE NULL END) AS experience_3_6,
+    COUNT(CASE WHEN r.experience = 'experience_6_plus' THEN 1 ELSE NULL END) AS experience_6_plus,
+    COUNT(CASE WHEN r.old_experience = 'experience_0_3' THEN 1 ELSE NULL END) AS old_experience_0_3,
+    COUNT(CASE WHEN r.old_experience = 'experience_3_6' THEN 1 ELSE NULL END) AS old_experience_3_6,
+    COUNT(CASE WHEN r.old_experience = 'experience_6_plus' THEN 1 ELSE NULL END) AS old_experience_6_plus
 FROM general_deals AS d
- JOIN rieltors AS r 
-        ON d.rieltor_id = r.rieltor_id 
+JOIN rieltors AS r 
+        ON d.rieltor_id = r.rieltor_id
 WHERE 
  ( d.country_house OR d.secondary_apartment OR d.commercial OR d.new_building OR  d.other_income )
+GROUP BY d.city_name, r.hsd_name, r.msd_name, r.rieltor_name
