@@ -80,13 +80,12 @@ deals AS (
         d.date_deal_findep,
         d.city_name,
         d.rieltor_id,
-        -- мы явно указываем, требуется уточнение по перечню object_class - нужно что-то еще?
-		-- CASE WHEN object_class IN ('Гараж', 'Гаражи') THEN TRUE ELSE FALSE END AS garage, -- это нам не интересно
 		CASE WHEN object_class = 'Загородная' THEN TRUE ELSE FALSE END AS country_house,
 		CASE WHEN object_class IN ('Вторичная', 'Квартира') THEN TRUE ELSE FALSE END AS secondary_apartment,
 		CASE WHEN object_class IN ('Новостройка','Новостройки') THEN TRUE ELSE FALSE END AS new_building,
 		CASE WHEN object_class = 'Коммерческая' THEN TRUE ELSE FALSE END AS commercial,
-		CASE WHEN object_class = 'Прочие поступления' THEN TRUE ELSE FALSE END AS other_income
+		CASE WHEN object_class = 'Прочие поступления' THEN TRUE ELSE FALSE END AS other_income,
+        d.scripts_indicator
 	FROM reports."278_6_deal" AS d
     JOIN dates_cte AS dt ON TRUE
     WHERE d.date_deal_findep >= dt.actual_date
@@ -104,13 +103,12 @@ interregional_deals AS (
         d.date_close_month,
         d.city_name,
         d.rieltor_id,
-        -- мы явно указываем, требуется уточнение по перечню object_class - нужно что-то еще?
-        -- CASE WHEN object_class = 'Гараж' THEN TRUE ELSE FALSE END AS garage, -- это нам не интересно
 		CASE WHEN object_class = 'Загородная' THEN TRUE ELSE FALSE END AS country_house,
 		CASE WHEN object_class IN ('Вторичная', 'Квартира') THEN TRUE ELSE FALSE END AS secondary_apartment,
 		CASE WHEN object_class = 'Коммерческая' THEN TRUE ELSE FALSE END AS commercial,
 		CASE WHEN object_class IN ('Новостройка','Новостройки') THEN TRUE ELSE FALSE END AS new_building,
-		CASE WHEN object_class = 'Прочие поступления' THEN TRUE ELSE FALSE END AS other_income
+		CASE WHEN object_class = 'Прочие поступления' THEN TRUE ELSE FALSE END AS other_income,
+        d.scripts_indicator
     FROM reports."532_187_interregional_commissions" AS d
     JOIN dates_cte AS dt ON TRUE
     WHERE d.date_close_month >= dt.actual_date 
@@ -150,23 +148,23 @@ general_deals as (
     select  d.date_deal_findep AS deal_date,
             d.city_name,
             d.rieltor_id,
-            d.garage,                          		
 		    d.country_house,            		
 		    d.secondary_apartment,       
 		    d.commercial,                  		
 		    d.new_building AS new_building,
-		    d.other_income
+		    d.other_income,
+            d.scripts_indicator
     from deals AS d
     UNION ALL
     select  di.date_close_month AS deal_date,
             di.city_name,
             di.rieltor_id,
-            di.garage,                          		
 		    di.country_house,            		
 		    di.secondary_apartment,       
 		    di.commercial,                  		
 		    di.new_building AS new_building,
-		    di.other_income
+		    di.other_income,
+            di.scripts_indicator
     from interregional_deals AS di
 )
 SELECT
@@ -181,12 +179,12 @@ SELECT
     r.old_experience_ten_days,
     r.experience,
     r.old_experience,
-    --d.garage,                          	-- гараж  
     d.country_house,            		-- загородная недвижимость  
     d.secondary_apartment,       		-- квартира + вторичная
     d.commercial,                  		-- коммерческая недвижимость  
     d.new_building,						-- новостройка  
-    d.other_income 
+    d.other_income,
+    d.scripts_indicator
 FROM general_deals AS d
  JOIN rieltors AS r 
         ON d.rieltor_id = r.rieltor_id 
