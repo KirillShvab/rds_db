@@ -12,6 +12,8 @@ BEGIN
     ELSE
         CREATE TABLE rmd_new.rieltors_experience_slice (
             id                        int,
+			deal_date 				  timestamp,
+
             deal_city_name            text,
             rieltor_city_name         text,
             hrm_id                    int,
@@ -38,3 +40,5 @@ BEGIN
     END IF;
 END;
 $$;
+
+call create_or_truncate_rieltors_experience_slice();

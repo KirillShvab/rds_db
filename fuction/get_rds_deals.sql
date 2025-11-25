@@ -1,5 +1,7 @@
 CREATE OR REPLACE FUNCTION get_rieltors_experience_slice()
 RETURNS TABLE (
+	id bigint,
+	deal_date timestamp,
     deal_city_name text,
     rieltor_city_name text,
     hrm_id int,
@@ -98,7 +100,7 @@ BEGIN
     ),
     deals AS (
         SELECT
-            d.date_deal_findep,
+            d.date_deal_findep as deal_date,
             d.city_name as deal_city_name,
             d.rieltor_id,
             (object_class = 'Загородная') AS country_house,
@@ -116,7 +118,7 @@ BEGIN
     ),
     interregional_deals AS (
         SELECT 
-            d.date_close_month,
+            d.date_close_month as deal_date,
             d.city_name as deal_city_name,
             d.rieltor_id,
             (object_class = 'Загородная') AS country_house,
@@ -137,6 +139,8 @@ BEGIN
         SELECT * FROM interregional_deals
     )
     SELECT
+		row_number() OVER () AS id,
+		d.deal_date::timestamp,
 	    d.deal_city_name::text,
 		r.rieltor_city_name::text,
 	    r.hrm_id::int,
@@ -154,7 +158,6 @@ BEGIN
 	    d.other_income::boolean,
 	    r.experience_ten_days::int,
 	    r.old_experience_ten_days::int,
-	
 	    r.experience,
 	    r.old_experience
     FROM general_deals AS d
@@ -162,3 +165,5 @@ BEGIN
     WHERE d.country_house OR d.secondary_apartment OR d.commercial OR d.new_building OR d.other_income;
 END;
 $$;
+
+

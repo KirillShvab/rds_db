@@ -7,5 +7,3 @@ BEGIN
     FROM rmd_new.get_rieltors_experience_slice();
 END;
 $$;
-
-CALL rmd_new.load_rieltors_experience();
