@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION rmd_new.get_rieltors_experience_slice()
+CREATE OR REPLACE FUNCTION rmd_new.get_rmd_slice(p_date_slice date DEFAULT NULL)
 RETURNS TABLE (
 	date_slice date,
     city_name text,
@@ -22,14 +22,19 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    actual_date date;
 BEGIN
+    -- Если дата передана, используем её, иначе CURRENT_DATE
+    actual_date := COALESCE(p_date_slice, CURRENT_DATE);
+
     RETURN QUERY
     WITH dates_cte AS (
         SELECT
             CASE
-                WHEN EXTRACT(DAY FROM CURRENT_DATE) <= 3 
-                    THEN (DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '1 month')::timestamp
-                ELSE DATE_TRUNC('month', CURRENT_DATE)::timestamp
+                WHEN EXTRACT(DAY FROM actual_date) <= 3 
+                    THEN (DATE_TRUNC('month', actual_date) - INTERVAL '1 month')::date
+                ELSE DATE_TRUNC('month', actual_date)::date
             END AS actual_date
     ),
     filtred_rieltors AS (
